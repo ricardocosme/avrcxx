@@ -3,10 +3,10 @@
 namespace avrcxx::interrupt {
 
 [[gnu::always_inline]] inline void enable() noexcept
-{ asm("sei"); }
+{ asm("sei" ::: "memory"); }
 
 [[gnu::always_inline]] inline void disable() noexcept
-{ asm("cli"); }
+{ asm("cli" ::: "memory"); }
 
 struct atomic {
     atomic(){ disable(); }
