@@ -62,8 +62,8 @@ inline void sleep() noexcept {
             static_assert(Duration / prescaler <= 65536,
                           "The duration is too high to be used with "
                           "the selected prescaler.");
-        cnt = 0;
-        while(cnt < (Duration / prescaler))
+        avrcxx_watchdog_cnt = 0;
+        while(avrcxx_watchdog_cnt < (Duration / prescaler))
             detail::sleep(prescaler);
         watchdog::off();
     }
