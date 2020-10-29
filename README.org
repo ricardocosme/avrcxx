@@ -70,5 +70,8 @@ Resets the watchdog timer.
 2. ~arv/io.h~
 
 *** [TODO]
-1. Support to ATtiny13
-2. Allow idle sleep mode with *8-bit Timer/Counter*
+1. Support to ATtiny13.
+2. Allow idle sleep mode with *8-bit Timer/Counter*.
+3. Remove the dependency from ~avr/io.h~ implemeting an IO abstraction.
+4. Watchdog timer using the reset mode.
+5. Policies to ~interrupt::atomic~.
