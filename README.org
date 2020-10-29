@@ -1,4 +1,4 @@
-*** sleep with power-down and watchdog timer
+** sleep with power-down and watchdog timer
 The MCU can sleep for a determined period of time while it waits for something. In this case, the sleep operation requires a timer and a duration. The system can be put on sleep at power-down mode and it can wake up after a period of time using a watchdog timer. It's a powerful combination to save power while the system is waiting for something or at least while it can save some power before taking the next step. This can be achieved here using one single line, for example: ~sleep::power_down::sleep<5s>()~. 
 
 **** Case: reading sensor values at a regular interval of time
