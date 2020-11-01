@@ -9,7 +9,7 @@ namespace avrcxx::watchdog {
 [[gnu::always_inline]] inline void off() noexcept {
     avrcxx::interrupt::atomic atomic;
     WDTCR = WDTCR | (1<<WDCE) | (1<<WDE); 
-    WDTCR = 0x00;
+    asm("out 0x21, __zero_reg__");
 }
 
 [[gnu::always_inline]] inline void reset() noexcept
