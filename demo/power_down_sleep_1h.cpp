@@ -1,5 +1,3 @@
-#define AVRCXX_WATCHDOG_COUNTER_RESOLUTION 16
-
 #include "avrcxx/sleep/power_down.hpp"
 
 using namespace avrcxx;

@@ -3,7 +3,7 @@
 #include "avrcxx/chrono/duration.hpp"
 #include "avrcxx/sleep/detail/prescaler.hpp"
 #include "avrcxx/sleep/sleep.hpp"
-#include "avrcxx/watchdog/counter.hpp"
+#include "avrcxx/watchdog/isr.hpp"
 #include "avrcxx/watchdog/watchdog.hpp"
 
 #include <stdint.h>
@@ -43,14 +43,18 @@ inline void sleep() noexcept {
         "Duration should be multiple of 16ms, 32ms, 64ms, 125ms, 500ms, "
         "1000ms, 2000ms, 4000ms or 8000ms.");
 
-    if constexpr(Duration == 16   || Duration == 32   || Duration == 64   ||
-                 Duration == 125  || Duration == 250  || Duration == 500  ||
-                 Duration == 1000 || Duration == 2000 || Duration == 4000 ||
-                 Duration == 8000)
+    constexpr auto duration_equal_to_prescaler =
+        Duration == 16   || Duration == 32   || Duration == 64   ||
+        Duration == 125  || Duration == 250  || Duration == 500  ||
+        Duration == 1000 || Duration == 2000 || Duration == 4000 ||
+        Duration == 8000;
+    
+    if constexpr(duration_equal_to_prescaler)
     {
         detail::sleep(Duration);
         watchdog::off();
     } else {
+#if   AVRCXX_WATCHDOG_HAS_COUNTER
         constexpr auto prescaler = detail::prescaler(Duration);
         if constexpr(AVRCXX_WATCHDOG_COUNTER_RESOLUTION == 8)
             static_assert(Duration / prescaler <= 255,
@@ -66,6 +70,13 @@ inline void sleep() noexcept {
         while(avrcxx_watchdog_cnt < (Duration / prescaler))
             detail::sleep(prescaler);
         watchdog::off();
+#     else
+        static_assert(duration_equal_to_prescaler,
+                      "You can't sleep with a duration that isn't equal to any "
+                      "prescaler without the software counter, which means that "
+                      "you can't execute this sleep if the macro "
+                      "AVRCXX_WATCHDOG_ELLIDE_COUNTER is defined.");
+#     endif
     }
 }
 

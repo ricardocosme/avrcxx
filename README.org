@@ -38,11 +38,12 @@ sleep::power_down::sleep<35min>(); //compile-time error
 //static assertion failed: The duration is too high to be used with the selected prescaler. The macro AVRCXX_WATCHDOG_COUNTER_RESOLUTION can be defined  to 16 to allow a 16bits software counter.
 
 sleep::power_down::sleep<8s>(); //optimized to not use the software counter
+//Note: this call can be more optimized if the software counter is elided by the definition of the macro AVRCXX_WATCHDOG_ELLIDE_COUNTER
 #+END_SRC
 
-When the software counter is required, the program should be linked to ~src/avrcxx/watchdog/counter.cpp~. A link error will be presented if the sleep requires the counter and it wasn't linked to the program. The counter isn't necessary when using one period of time equals to any watchdog timer prescaler.
+*The program must be linked to ~src/avrcxx/watchdog/isr.cpp~* and the counter can be elided if the macro ~AVRCXX_WATCHDOG_ELLIDE_COUNTER~ is defined. The counter can only be elided if the user code doesn't call sleep with a duration different from any prescaler value. A compile-time error is emitted if the condition isn't satisfied.
 
-The counter can be configured to 16 bits using the macro ~AVRCXX_WATCHDOG_COUNTER_RESOLUTION~. This is useful when it is required to count above 255 to achieve the desired period of time. Take a look at ~demo/power_down_sleep_45min.cpp~ to see an example.
+The counter can be configured to 16 bits using the macro ~AVRCXX_WATCHDOG_COUNTER_RESOLUTION~. This is necessary when it is required to count above 255 to achieve the desired period of time. Take a look at ~demo/power_down_sleep_45min.cpp~ to see an example.
 
 ***** ~sleep::power_down::enable()~
 Enables the power down sleep mode.
@@ -61,6 +62,11 @@ Disables the watchdog timer that was defined.
 
 ***** ~watchdog::reset()~
 Resets the watchdog timer.
+
+***** How to use
+1. Include the header ~avrcxx/sleep/power_down.hpp~.
+2. If necessary or desirable, define the macros ~AVRCXX_WATCHDOG_ELLIDE_COUNTER~ or ~AVRCXX_WATCHDOG_COUNTER_RESOLUTION~. (Take a look above to know more about them)
+3. Link the program with ~src/avrcxx/watchdog/isr.cpp~.
 
 *** Supported MCUs
 1. ATtiny85
