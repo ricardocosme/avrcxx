@@ -10,13 +10,11 @@
 
 namespace avrcxx::sleep::power_down {
 
-//TODO: I need to write zero to SM0
 [[gnu::always_inline]] inline void enable() noexcept
-{ MCUCR = MCUCR | (1<<SE) | (1<<SM1); }
+{ MCUCR = MCUCR | (((1<<SE) | (1<<SM1)) & ~(1<<SM0)); }
 
-//TODO: I need to write zero to SM0
 [[gnu::always_inline]] inline void disable() noexcept
-{ MCUCR = MCUCR & ~((1<<SE) | (1<<SM1)); } 
+{ MCUCR = MCUCR & ~((1<<SE) | (1<<SM1) | (1<<SM0)); } 
 
 }
 
