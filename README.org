@@ -11,6 +11,10 @@ It's a collection of C++11/17/20 libraries to program AVR8 that shares a common 
 8. The code written in the application layer should be expressive and concise when possible.
 
 [[https://github.com/ricardocosme/avrIO][avrIO]]: Operation of I/O port pins and I/O registers.
+
 [[https://github.com/ricardocosme/avrINT][avrINT]]: Facilities to use the interrupt capabilities.
+
 [[https://github.com/ricardocosme/avrWDT][avrWDT]]: Setup of the watchdog timer(WDT).
+
 [[https://github.com/ricardocosme/avrSLEEP][avrSLEEP]]: Facilities to use the power management and sleep modes.
+
