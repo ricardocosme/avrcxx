@@ -1,84 +1,16 @@
-** sleep with power-down and watchdog timer
-The MCU can sleep for a determined period of time while it waits for something. In this case, the sleep operation requires a timer and a duration. The system can be put on sleep at power-down mode and it can wake up after a period of time using a watchdog timer. It's a powerful combination to save power while the system is waiting for something or at least while it can save some power before taking the next step. This can be achieved here using one single line, for example: ~sleep::power_down::sleep<5s>()~. 
+** avrcxx
+It's a collection of C++11/17/20 libraries to program AVR8 that shares a common set of goals and requirements. Each library should follow:
 
-**** Case: reading sensor values at a regular interval of time
-#+BEGIN_SRC C++
-while(true) {
-  do_something(read_sensor());
-  sleep::power_down::sleep<10min>();
-}
-#+END_SRC
-The program reads the sensor, it does something with the result and after that the system is put on sleep for 10 minutes before taking another reading of the sensor.
+1. At least support to C++11. Support to newer standards is optional.
+2. The library should be header-only.
+3. The zero-overhead principle must guides design decisions and implementation.
+4. Space performance is more important than speed performance, as a general rule.
+5. Runtime errors should be brought to compile-time whenever possible.
+6. The library doesn't need to support ~-O0~ or ~O1~.
+7. The library should use the ~-Os~ as the target optimization level to be used.
+8. The code written in the application layer should be expressive and concise when possible.
 
-**** Blinker
-#+BEGIN_SRC C++
-#include "avrcxx/sleep/power_down.hpp"
-using namespace avrcxx;
-
-int main() {
-    DDRB = 1 << LED_PIN;
-    while(true) {
-        PORTB = PORTB ^ (1 << LED_PIN);
-        sleep::power_down::sleep<3s>();
-    }
-}
-#+END_SRC
-~128 bytes~ of code size compiled with ~avr-gcc 10.2.0~ and ~-Os -mmcu=attiny85~.
-
-***** ~sleep::power_down::sleep<Duration>()~
-It configures an optimized timer at compile-time using the watchdog timer, it starts this timer and put the system on sleep mode. The next instruction after the sleep is executed after the interval of time defined by ~Duration~ has passed.
-
-Some decisions are taken at compile-time to bring some possible runtime errors to the compile phase. The ~Duration~ must be a multiple of any possible watchdog timer prescaler, for example, the ATtiny85 have the following prescalers: 16ms, 32ms, 64ms, 125ms, 250ms, 500ms, 1s, 2s, 4s and 8s. The duration can't be 17ms, for example. But, it can be 3s because this component will choose at compile-time an 8bits software counter to count from 1 to 3 to achieve 3s using the watchdog timer with 1s as prescaler. If the duration is equal to a prescaler value, then the software counter isn't used at all.
-
-#+BEGIN_SRC C++
-sleep::power_down::sleep<17ms>(); //compile-timer error
-//static assertion failed: Duration should be multiple of 16ms, 32ms, 64ms, 125ms, 500ms, 1000ms, 2000ms, 4000ms or 8000ms.
-
-sleep::power_down::sleep<35min>(); //compile-time error
-//static assertion failed: The duration is too high to be used with the selected prescaler. The macro AVRCXX_WATCHDOG_COUNTER_RESOLUTION can be defined  to 16 to allow a 16bits software counter.
-
-sleep::power_down::sleep<8s>(); //optimized to not use the software counter
-//Note: this call can be more optimized if the software counter is elided by the definition of the macro AVRCXX_WATCHDOG_ELLIDE_COUNTER
-#+END_SRC
-
-*The program must be linked to ~src/avrcxx/watchdog/isr.cpp~* and the counter can be elided if the macro ~AVRCXX_WATCHDOG_ELLIDE_COUNTER~ is defined. The counter can only be elided if the user code doesn't call sleep with a duration different from any prescaler value. A compile-time error is emitted if the condition isn't satisfied.
-
-The counter can be configured to 16 bits using the macro ~AVRCXX_WATCHDOG_COUNTER_RESOLUTION~. This is necessary when it is required to count above 255 to achieve the desired period of time. Take a look at ~demo/power_down_sleep_45min.cpp~ to see an example.
-
-***** ~sleep::power_down::enable()~
-Enables the power down sleep mode.
-
-***** ~sleep::power_down::disable()~
-Disables the power down sleep mode.
-
-***** ~sleep::sleep()~
-Puts the system on sleep.
-
-***** ~watchdog::interrupt::at_[16ms,32ms,64ms,125ms,250ms,500ms,1s,2,4s,8s]::on()~
-Enables and starts a watchdog timer configured for the interrupt mode.
-
-***** ~watchdog::off()~
-Disables the watchdog timer that was defined.
-
-***** ~watchdog::reset()~
-Resets the watchdog timer.
-
-***** How to use
-1. Include the header ~avrcxx/sleep/power_down.hpp~.
-2. If necessary or desirable, define the macros ~AVRCXX_WATCHDOG_ELLIDE_COUNTER~ or ~AVRCXX_WATCHDOG_COUNTER_RESOLUTION~. (Take a look above to know more about them)
-3. Link the program with ~src/avrcxx/watchdog/isr.cpp~.
-
-*** Supported MCUs
-1. ATtiny85
-2. ATtiny13A
-
-*** Requirements
-1. ~avr-gcc~ with ~-std=c++17~
-2. ~arv/io.h~
-
-*** [TODO]
-1. Allow idle sleep mode with *8-bit Timer/Counter*.
-2. Remove the dependency from ~avr/io.h~ implemeting an IO abstraction.
-3. Watchdog timer using the reset mode.
-4. Policies to ~interrupt::atomic~.
-
+[[https://github.com/ricardocosme/avrIO][avrIO]]: Operation of I/O port pins and I/O registers.
+[[https://github.com/ricardocosme/avrINT][avrINT]]: Facilities to use the interrupt capabilities.
+[[https://github.com/ricardocosme/avrWDT][avrWDT]]: Setup of the watchdog timer(WDT).
+[[https://github.com/ricardocosme/avrSLEEP][avrSLEEP]]: Facilities to use the power management and sleep modes.
